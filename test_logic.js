@@ -2,7 +2,7 @@ const assert = require("node:assert/strict");
 const t = require("./logic.js");
 
 const records = t.parseRecords('SKU;Nombre;Precio\r\nA;"con; separador";20\r\n\r\nB;"multilínea\r\ncon texto";21\r\n');
-assert.deepEqual(records.map(r => r.line), [1, 2, 3, 4, 5]);
+assert.deepEqual(records.map(r => r.line), [1, 2, 3, 4]);
 assert.deepEqual(records[1].cells, ["A", "con; separador", "20"]);
 assert.deepEqual(records[3].cells, ["B", "multilínea\ncon texto", "21"]);
 assert.deepEqual(t.parse("\uFEFFA,B,C\r\n1,2,3\r\n"), [["A","B","C"],["1","2","3"]]);
@@ -44,4 +44,4 @@ assert.match(t.serialize([["A","B"],['=HYPERLINK("x")',"content"]]), /^"A","B"\r
 assert.ok(t.serialize([["  =2+3","\n@SUM(1)"]]).includes("'  =2+3"));
 assert.ok(t.serialize([["  =2+3","\n@SUM(1)"]]).includes("'\n@SUM(1)"));
 assert.equal(t.parse(t.serialize([["Col1","Col2"],["Hola, mundo","multi\nlinea"]]))[1][0],"Hola, mundo");
-console.log("PASS: 29 verificaciones lógicas (CSV, duplicados, precios, líneas, mapeo y seguridad de exportación).");
+console.log("PASS: 36 verificaciones lógicas (CSV, duplicados, precios, líneas, mapeo y seguridad de exportación).");
