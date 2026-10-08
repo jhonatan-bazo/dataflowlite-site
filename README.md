@@ -22,7 +22,7 @@ Landing pública y demostración local de CSV para investigar la demanda de una 
 
 Es un sitio estático sin dependencias externas. Sirve `index.html`, `demo.html`, `logic.js` y `demo.js` desde cualquier hosting de archivos estáticos.
 
-Para probar el parser en local con Node.js: `node test_logic.js`.
+Para ejecutar las pruebas con Node.js (sin dependencias): `node test_logic.js` y `node test_demo.js`.
 
 ## Contacto
 

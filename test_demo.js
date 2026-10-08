@@ -75,4 +75,4 @@ controls.sku.value="0";
 controls.sku.dispatch("change");
 controls.validate.dispatch("click");
 assert.equal(controls.result.hidden,false);
-console.log("PASS: 81 verificaciones de interfaz y exportaciones.");
+console.log("PASS: pruebas integradas de interfaz, duplicados, reportes y mapeo.");
