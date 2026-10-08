@@ -14,7 +14,9 @@ a{color:var(--accent)}h1{font-size:clamp(28px,4vw,42px);margin-bottom:8px}p{line
 select,input[type=file]{width:100%;padding:11px;border:1px solid #496077;border-radius:8px;background:#0e2032;color:var(--text)}
 button{background:var(--accent);color:#10212b;border:0;border-radius:9px;padding:13px 18px;font-weight:700;cursor:pointer;margin:12px 12px 0 0}
 button:disabled{opacity:.45;cursor:not-allowed}.ghost{background:#2a4354;color:#e7f3fd}
-.notice{font-size:13px;background:#1a3243;border-radius:8px;padding:12px}.error{color:#ffbb9f}.ok{color:#8bedb8}
+.notice{font-size:13px;background:#1a3243;border-radius:8px;padding:12px}.error{color:#ffbb9f}.ok{color:#8bedb8}.warning{color:#f3c878}
+.checklabel{display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin-top:16px}
+.checklabel input{width:18px;height:18px;flex:none;margin-top:3px;accent-color:var(--accent)}
 .tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{text-align:left;border-bottom:1px solid var(--line);padding:10px;white-space:nowrap}th{color:var(--accent)}
 .muted{color:var(--muted)}.small{font-size:13px}.badge{display:inline-block;padding:5px 10px;border-radius:50px;border:1px solid #4c7078;font-size:12px;color:var(--accent)}
@@ -41,7 +43,9 @@ th,td{text-align:left;border-bottom:1px solid var(--line);padding:10px;white-spa
 <div class="field"><label for="name">Nombre (obligatorio)</label><select id="name"></select></div>
 <div class="field"><label for="price">Precio (decimal)</label><select id="price"></select></div>
 </div>
-<p class="small muted">En este esquema el SKU es único. Si se repite, se revisan todas sus apariciones. Diferentes precios o nombres no generan automáticamente productos distintos.</p>
+<label class="checklabel" for="allow-variants"><input type="checkbox" id="allow-variants"><span>Permitir SKU repetidos si el nombre o el precio son diferentes</span></label>
+<p class="small muted">Desactivado por defecto. Con la opción activada se admiten variaciones, pero los registros idénticos y los datos inválidos siguen bloqueados.</p>
+<p id="variant-note" class="notice" hidden>Atención: algunos sistemas ERP/POS requieren SKU únicos. Si importas registros repetidos, el destino podría rechazarlos, sobrescribir productos o aplicar reglas distintas. Revisa el archivo antes de utilizarlo.</p>
 <button id="validate" type="button" disabled>Validar importación</button>
 <p id="feedback" role="status" aria-live="polite"></p>
 </section>
@@ -52,7 +56,7 @@ th,td{text-align:left;border-bottom:1px solid var(--line);padding:10px;white-spa
 <p id="row-limit" class="small muted" hidden>Vista limitada a las primeras 50 filas; la validación y los CSV incluyen todos los registros.</p>
 <button id="download" type="button" disabled>Descargar CSV válido</button>
 <button id="download-errors" class="ghost" type="button" disabled>Descargar reporte de errores</button>
-<p class="small muted">Los SKU repetidos, incluso con precios diferentes, se excluyen en todas sus apariciones hasta ser revisados. El CSV válido no incluye filas con errores. Comprueba el esquema y los datos antes de usarlos en sistemas reales.</p>
+<p class="small muted">Sin la opción activada, cualquier SKU repetido queda excluido. Al permitir variaciones, las filas aceptadas con advertencias se incluyen en el CSV; los registros idénticos y los errores se excluyen. Comprueba que tu sistema de destino admita esta estructura antes de importarla.</p>
 </section>
 <section class="panel">
 <h2>4. ¿Te enfrentas a este problema?</h2>

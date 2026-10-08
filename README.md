@@ -11,7 +11,9 @@ Landing pública y demostración local de CSV para investigar la demanda de una 
 
 - Prototipo comercial **en validación**. Todavía no hay un producto de escritorio disponible ni ventas.
 - La demo admite **CSV UTF-8 hasta 5 MB**, no XLSX; transforma tres campos a un esquema fijo de SKU, Nombre y Precio.
-- Regla de ejemplo: SKU único (sin distinguir mayúsculas); ante repetidos, bloquea **todas** las filas asociadas, identifica nombres y precios conflictivos y permite exportar un CSV de errores.
+- Regla predeterminada: SKU único (sin distinguir mayúsculas); ante repetidos, bloquea **todas** las filas asociadas y permite exportar un CSV de errores.
+- Casilla opcional «Permitir SKU repetidos si el nombre o el precio son diferentes»: admite variaciones con advertencia, pero sigue bloqueando duplicados idénticos y campos inválidos. La opción parte desactivada; úsala solo si tu ERP/POS admite múltiples filas por SKU.
+- El CSV válido incluye las variaciones admitidas cuando se activa la opción. No realiza importaciones ni evita que el ERP/POS sobrescriba o rechace registros.
 - Precio: coma o punto decimal, máximo dos decimales y **sin separadores de miles**. Los formatos ambiguos se rechazan.
 - Cambiar el mapeo invalida las exportaciones hasta volver a validar. Se conserva la numeración física de líneas de CSV incluso si contiene saltos dentro de comillas.
 - No conserva perfiles entre sesiones; no ejecuta cargas al ERP ni conexiones de red.

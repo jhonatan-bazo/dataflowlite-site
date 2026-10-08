@@ -89,10 +89,11 @@ $("file").addEventListener("change", async event => {
   }
 });
 
-for (const id of ["sku", "name", "price"]) {
+for (const id of ["sku", "name", "price", "allow-variants"]) {
   $(id).addEventListener("change", () => {
     clearResults();
-    status("El mapeo cambió. Valida de nuevo antes de exportar.");
+    $("variant-note").hidden = !$("allow-variants").checked;
+    status("Cambió la configuración. Valida de nuevo antes de exportar.");
   });
 }
 
@@ -104,11 +105,15 @@ $("validate").addEventListener("click", () => {
     return;
   }
   try {
-    results = CSVTools.validateRecords(source, indices.map(Number));
+    results = CSVTools.validateRecords(source, indices.map(Number), {
+      allowDistinctSku: $("allow-variants").checked
+    });
     const valid = results.filter(row => row.errors.length === 0);
     const invalid = results.length - valid.length;
+    const warned = valid.filter(row => row.warnings.length > 0).length;
     $("summary").textContent = results.length + " registros · " +
-      valid.length + (valid.length === 1 ? " válido" : " válidos") + " · " + invalid + " con errores.";
+      valid.length + (valid.length === 1 ? " válido" : " válidos") + " · " + invalid +
+      " con errores" + (warned ? " · " + warned + " con advertencias" : "") + ".";
     const table = $("rows");
     table.replaceChildren();
     for (const row of results.slice(0, 50)) {
@@ -119,21 +124,24 @@ $("validate").addEventListener("click", () => {
         row.sku,
         row.name,
         price,
-        row.errors.length ? row.errors.join(" | ") : "Válido"
+        row.errors.length ? row.errors.join(" | ") :
+          row.warnings.length ? "Variación admitida: " + row.warnings.join(" | ") : "Válido"
       ];
       for (const value of values) {
         const td = document.createElement("td");
         td.textContent = String(value);
         tr.append(td);
       }
-      tr.lastChild.className = row.errors.length ? "error" : "ok";
+      tr.lastChild.className = row.errors.length ? "error" : row.warnings.length ? "warning" : "ok";
       table.append(tr);
     }
     $("row-limit").hidden = results.length <= 50;
     $("result").hidden = false;
     $("download").disabled = valid.length === 0;
     $("download-errors").disabled = invalid === 0;
-    status("Validación terminada. Ningún SKU repetido se exportará automáticamente.");
+    status($("allow-variants").checked ?
+      "Validación terminada. Las variaciones de SKU pueden exportarse; los duplicados idénticos siguen bloqueados." :
+      "Validación terminada. Ningún SKU repetido se exportará automáticamente.");
   } catch (error) {
     status(error.message || "No se pudo validar el archivo.", true);
   }

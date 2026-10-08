@@ -44,4 +44,28 @@ assert.match(t.serialize([["A","B"],['=HYPERLINK("x")',"content"]]), /^"A","B"\r
 assert.ok(t.serialize([["  =2+3","\n@SUM(1)"]]).includes("'  =2+3"));
 assert.ok(t.serialize([["  =2+3","\n@SUM(1)"]]).includes("'\n@SUM(1)"));
 assert.equal(t.parse(t.serialize([["Col1","Col2"],["Hola, mundo","multi\nlinea"]]))[1][0],"Hola, mundo");
-console.log("PASS: 36 verificaciones lógicas (CSV, duplicados, precios, líneas, mapeo y seguridad de exportación).");
+
+const variantMode=t.validateRecords(t.parseRecords(sample).slice(1),[0,1,2],{allowDistinctSku:true});
+assert.equal(variantMode.filter(r=>r.errors.length===0).length,3);
+assert.equal(variantMode.filter(r=>r.warnings.length>0).length,2);
+assert.equal(variantMode[1].warnings.length,1);
+assert.equal(variantMode[3].warnings.length,1);
+assert.match(variantMode[1].warnings[0],/SKU repetido permitido/);
+assert.equal(variantMode[2].errors[0],"SKU vacío");
+assert.equal(t.validateRecords(t.parseRecords(sample).slice(1),[0,1,2],{allowDistinctSku:false}).filter(r=>r.errors.length===0).length,1);
+
+const equalVariants=t.validateRecords(t.parseRecords("s;n;p\nX;Uno;19.9\nx; uno ;19.90").slice(1),[0,1,2],{allowDistinctSku:true});
+assert.equal(equalVariants.filter(r=>r.errors.length>0).length,2);
+assert.ok(equalVariants.every(r=>r.errors.join().includes("Registro duplicado")));
+const mixedVariants=t.validateRecords(t.parseRecords("s;n;p\nX;Uno;10\nx;UNO;10.00\nX;Dos;11").slice(1),[0,1,2],{allowDistinctSku:true});
+assert.equal(mixedVariants.filter(r=>r.errors.length>0).length,2);
+assert.equal(mixedVariants[2].errors.length,0);
+assert.equal(mixedVariants[2].warnings.length,1);
+const invalidVariant=t.validateRecords(t.parseRecords("s;n;p\nX;Uno;13\nx;Dos;precio").slice(1),[0,1,2],{allowDistinctSku:true});
+assert.equal(invalidVariant[0].errors.length,0);
+assert.equal(invalidVariant[1].errors.length,1);
+assert.match(invalidVariant[1].errors[0],/Precio inválido/);
+const solo=t.validateRecords(t.parseRecords("s;n;p\nX;Uno;13").slice(1),[0,1,2],{allowDistinctSku:true});
+assert.equal(solo[0].warnings.length,0);
+
+console.log("PASS: pruebas lógicas, SKU únicos, variantes opcionales, duplicados idénticos y errores de formato.");

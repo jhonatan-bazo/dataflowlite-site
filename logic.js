@@ -110,7 +110,7 @@
   const normalizeSku = value => value.trim().toLowerCase();
   const normalizeName = value => value.trim().toLowerCase();
 
-  function validateRecords(records, indices) {
+  function validateRecords(records, indices, options = {}) {
     if (!Array.isArray(indices) || indices.length !== 3 ||
         indices.some(index => !Number.isSafeInteger(index) || index < 0) ||
         new Set(indices).size !== 3) {
@@ -130,7 +130,7 @@
         if (!sku) errors.push("SKU vacío");
         if (!name) errors.push("Nombre vacío");
         if (price === null) errors.push("Precio inválido (usa 0-2 decimales, sin miles)");
-        return { line: record.line, sku, name, rawPrice, price, errors };
+        return { line: record.line, sku, name, rawPrice, price, errors, warnings: [] };
       });
 
     const groups = new Map();
@@ -141,18 +141,46 @@
       groups.get(key).push(row);
     }
 
+    // Default: reject every occurrence of a repeated SKU.
+    // Optional mode: allow unique name/price variants under the same SKU;
+    // identical duplicates remain invalid, and field errors are never bypassed.
+    const allowDistinctSku = options != null && options.allowDistinctSku === true;
     for (const group of groups.values()) {
       if (group.length === 1) continue;
       const lines = group.map(row => row.line).join(", ");
-      const prices = [...new Set(group
-        .filter(row => row.price !== null)
-        .map(row => row.price.toFixed(2)))];
-      const names = new Set(group.map(row => normalizeName(row.name)));
-      let message = "SKU repetido en líneas " + lines;
-      if (prices.length > 1) message += "; precios diferentes: " + prices.join(" / ");
-      if (names.size > 1) message += "; nombres diferentes";
-      if (prices.length <= 1 && names.size === 1) message += "; datos repetidos";
-      group.forEach(row => row.errors.push(message));
+      if (!allowDistinctSku) {
+        const prices = [...new Set(group
+          .filter(row => row.price !== null)
+          .map(row => row.price.toFixed(2)))];
+        const names = new Set(group.map(row => normalizeName(row.name)));
+        let message = "SKU repetido en líneas " + lines;
+        if (prices.length > 1) message += "; precios diferentes: " + prices.join(" / ");
+        if (names.size > 1) message += "; nombres diferentes";
+        if (prices.length <= 1 && names.size === 1) message += "; datos repetidos";
+        group.forEach(row => row.errors.push(message));
+        continue;
+      }
+
+      const signatures = new Map();
+      for (const row of group) {
+        if (!row.name || row.price === null) continue;
+        const signature = JSON.stringify([normalizeName(row.name), row.price.toFixed(2)]);
+        if (!signatures.has(signature)) signatures.set(signature, []);
+        signatures.get(signature).push(row);
+      }
+      for (const equalRows of signatures.values()) {
+        if (equalRows.length <= 1) continue;
+        const equalLines = equalRows.map(row => row.line).join(", ");
+        const message = "Registro duplicado (mismo SKU, nombre y precio) en líneas " + equalLines;
+        equalRows.forEach(row => row.errors.push(message));
+      }
+
+      for (const row of group) {
+        if (row.errors.length === 0) {
+          row.warnings.push("SKU repetido permitido por configuración (líneas " + lines +
+            "). Confirma que el sistema destino admita identificadores repetidos.");
+        }
+      }
     }
     return rows;
   }

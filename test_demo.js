@@ -12,6 +12,7 @@ class MockElement {
     this.textContent = "";
     this.className = "";
     this.disabled = false;
+    this.checked = false;
     this.hidden = false;
   }
   addEventListener(name, callback) { this.listeners[name] = callback; }
@@ -22,7 +23,8 @@ class MockElement {
   get lastChild() { return this.children.at(-1); }
 }
 const ids = ["file","sample","feedback","result","sku","name","price",
- "validate","summary","rows","row-limit","download","download-errors"];
+ "validate","summary","rows","row-limit","download","download-errors",
+ "allow-variants","variant-note"];
 const controls = Object.fromEntries(ids.map(id => [id,new MockElement()]));
 const anchors = [], blobs = [];
 const document = {
@@ -75,4 +77,29 @@ controls.sku.value="0";
 controls.sku.dispatch("change");
 controls.validate.dispatch("click");
 assert.equal(controls.result.hidden,false);
-console.log("PASS: pruebas integradas de interfaz, duplicados, reportes y mapeo.");
+
+controls["allow-variants"].checked=true;
+controls["allow-variants"].dispatch("change");
+assert.equal(controls.result.hidden,true);
+assert.equal(controls.download.disabled,true);
+assert.equal(controls["variant-note"].hidden,false);
+controls.validate.dispatch("click");
+assert.match(controls.summary.textContent,/4 registros · 3 válidos · 1 con errores · 2 con advertencias/);
+const variants=controls.rows.children.map(tr=>tr.lastChild.textContent);
+assert.match(variants[1],/Variación admitida/);
+assert.match(variants[3],/Variación admitida/);
+assert.match(variants[2],/SKU vacío/);
+controls.download.dispatch("click");
+const allowedCSV=blobs.at(-1).parts.join("");
+assert.equal(allowedCSV.split("SKU-205").length-1,2);
+controls["download-errors"].dispatch("click");
+assert.doesNotMatch(blobs.at(-1).parts.join(""),/SKU-205/);
+
+controls["allow-variants"].checked=false;
+controls["allow-variants"].dispatch("change");
+assert.equal(controls.result.hidden,true);
+assert.equal(controls["variant-note"].hidden,true);
+controls.validate.dispatch("click");
+assert.match(controls.summary.textContent,/4 registros · 1 válido · 3 con errores/);
+
+console.log("PASS: pruebas integradas de interfaz, casilla de variantes, CSV, reportes y mapeo.");
