@@ -108,7 +108,7 @@ $("validate").addEventListener("click", () => {
     const valid = results.filter(row => row.errors.length === 0);
     const invalid = results.length - valid.length;
     $("summary").textContent = results.length + " registros · " +
-      valid.length + " válidos · " + invalid + " con errores.";
+      valid.length + (valid.length === 1 ? " válido" : " válidos") + " · " + invalid + " con errores.";
     const table = $("rows");
     table.replaceChildren();
     for (const row of results.slice(0, 50)) {
