@@ -1,0 +1,15 @@
+const assert = require("node:assert/strict");
+const t = require("./logic.js");
+assert.deepEqual(t.parse('A;B;C\n1;"hello; world";2\n3;"text\nsecond line";4\n'), [["A","B","C"],["1","hello; world","2"],["3","text\nsecond line","4"]]);
+assert.deepEqual(t.parse("\uFEFFA,B,C\r\n1,2,3\r\n"), [["A","B","C"],["1","2","3"]]);
+assert.equal(t.parsePrice("19,90"), 19.9);
+assert.equal(t.parsePrice("19.90"), 19.9);
+assert.equal(t.parsePrice("1.234,56"), null);
+assert.equal(t.parsePrice("-25"), null);
+assert.equal(t.parsePrice("1e9"), null);
+assert.match(t.serialize([["A","B"],['=HYPERLINK("x")',"content"]]), /^"A","B"\r\n"'=HYPERLINK\(""x""\)","content"\r\n$/);
+assert.throws(() => t.parse("a;b\n1;2;3"), /distinta/);
+assert.throws(() => t.parse('a;b\n"not closed;2'), /sin cerrar/);
+const sample="Codigo;Producto;Costo\nSKU-102;Teclado USB;42.50\nSKU-205;Mouse óptico;19,90\n;Adaptador;24.00\nSKU-205;Mouse extra;21.00";
+assert.equal(t.parse(sample).length,5);
+console.log("PASS: pruebas CSV, precios, errores, seguridad de exportación y ejemplo.");

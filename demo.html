@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DataFlow Lite — Demo de mapeo CSV</title>
+<meta name="description" content="Demo interactiva de transformación CSV para un formato destino. Procesamiento en tu navegador.">
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark;--bg:#0b1423;--panel:#14253b;--line:#30465c;--text:#ebf5fe;--muted:#a9bdcf;--accent:#75e4d6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}main{max-width:1000px;margin:auto;padding:32px 20px 70px}
+a{color:var(--accent)}h1{font-size:clamp(28px,4vw,42px);margin-bottom:8px}p{line-height:1.65;color:var(--muted)}
+.panel{background:var(--panel);padding:25px;border:1px solid var(--line);border-radius:16px;margin:20px 0}
+.row{display:flex;flex-wrap:wrap;gap:16px}.field{flex:1 1 220px}label{display:block;font-weight:650;margin-bottom:8px;font-size:14px}
+select,input[type=file]{width:100%;padding:11px;border:1px solid #496077;border-radius:8px;background:#0e2032;color:var(--text)}
+button{background:var(--accent);color:#10212b;border:0;border-radius:9px;padding:13px 18px;font-weight:700;cursor:pointer;margin:12px 12px 0 0}
+button:disabled{opacity:.45;cursor:not-allowed}.ghost{background:#2a4354;color:#e7f3fd}
+.notice{font-size:13px;background:#1a3243;border-radius:8px;padding:12px}.error{color:#ffbb9f}.ok{color:#8bedb8}
+.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;border-bottom:1px solid var(--line);padding:10px;white-space:nowrap}th{color:var(--accent)}
+.muted{color:var(--muted)}.small{font-size:13px}.badge{display:inline-block;padding:5px 10px;border-radius:50px;border:1px solid #4c7078;font-size:12px;color:var(--accent)}
+#feedback{min-height:1.5em}footer{margin-top:35px;font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<a href="index.html">← Volver a la propuesta</a>
+<p class="badge">Prototipo navegable · CSV solamente</p>
+<h1>Convierte un CSV al formato de tu sistema.</h1>
+<p>Prueba un ejemplo: asigna las columnas a <strong>SKU, Nombre y Precio</strong>, valida los registros y descarga un CSV con un esquema fijo. El procesamiento ocurre en tu navegador; no transmitimos archivos a ningún servidor.</p>
+<section class="panel">
+<h2>1. Archivo de origen</h2>
+<p>Selecciona un archivo CSV UTF-8 de hasta 5 MB o carga el ejemplo que contiene errores intencionales.</p>
+<input type="file" id="file" accept=".csv,text/csv">
+<button id="sample" type="button" class="ghost">Cargar ejemplo</button>
+<p class="notice">Esta es una prueba de concepto. No importa XLSX, no guarda perfiles y no maneja automáticamente todas las convenciones regionales.</p>
+</section>
+<section class="panel">
+<h2>2. Correspondencia de columnas</h2>
+<div class="row">
+<div class="field"><label for="sku">SKU (obligatorio)</label><select id="sku"></select></div>
+<div class="field"><label for="name">Nombre (obligatorio)</label><select id="name"></select></div>
+<div class="field"><label for="price">Precio (decimal)</label><select id="price"></select></div>
+</div>
+<button id="validate" type="button" disabled>Validar importación</button>
+<p id="feedback" role="status" aria-live="polite"></p>
+</section>
+<section class="panel" id="result" hidden>
+<h2>3. Resultado</h2>
+<p id="summary"></p>
+<div class="tablewrap"><table><thead><tr><th>Fila origen</th><th>SKU</th><th>Nombre</th><th>Precio</th><th>Resultado</th></tr></thead><tbody id="rows"></tbody></table></div>
+<button id="download" type="button" disabled>Descargar CSV válido</button>
+<p class="small muted">Las filas erróneas se excluyen de la exportación. Verifica el resultado antes de utilizarlo en sistemas reales.</p>
+</section>
+<section class="panel">
+<h2>4. ¿Te enfrentas a este problema?</h2>
+<p>Estamos buscando experiencias reales de importación de datos para definir qué merece desarrollarse. Puedes contarnos qué sistema usas, qué errores aparecen y cuánto tiempo te lleva corregirlos. <strong>No compartas archivos ni datos confidenciales.</strong></p>
+<a href="mailto:hola.dataflowlite@gmail.com?subject=DataFlow%20Lite%20-%20feedback%20demo%20CSV&amp;body=Hola%2C%20prob%C3%A9%20la%20demo%20CSV.%0A%0AMi%20rol%20o%20sector%3A%0AEl%20sistema%20al%20que%20importo%3A%0AEl%20problema%20m%C3%A1s%20frecuente%3A%0AFrecuencia%20de%20importaciones%3A%0AHerramienta%20que%20utilizo%20hoy%3A%0A">Compartir mi experiencia por correo →</a>
+<p class="small">Usaremos tu mensaje solo para esta investigación y para responderte. No habrá suscripción automática a correos.</p>
+</section>
+<footer>DataFlow Lite · Prototipo de investigación comercial. Esta demo no almacena datos ni llama a servicios de red. El enlace de contacto abre tu cliente de correo.</footer>
+</main>
+<script src="logic.js"></script><script src="demo.js"></script>
+</body>
+</html>
