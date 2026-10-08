@@ -32,7 +32,7 @@ th,td{text-align:left;border-bottom:1px solid var(--line);padding:10px;white-spa
 <p>Selecciona un archivo CSV UTF-8 de hasta 5 MB o carga el ejemplo que contiene errores intencionales.</p>
 <input type="file" id="file" accept=".csv,text/csv">
 <button id="sample" type="button" class="ghost">Cargar ejemplo</button>
-<p class="notice">Esta es una prueba de concepto. No importa XLSX, no guarda perfiles y no maneja automáticamente todas las convenciones regionales.</p>
+<p class="notice">Esta es una prueba de concepto. Solo admite CSV UTF-8 con separador coma, punto y coma o tabulación y precios sin separadores de miles (máximo 2 decimales). No importa XLSX ni guarda perfiles.</p>
 </section>
 <section class="panel">
 <h2>2. Correspondencia de columnas</h2>
@@ -41,6 +41,7 @@ th,td{text-align:left;border-bottom:1px solid var(--line);padding:10px;white-spa
 <div class="field"><label for="name">Nombre (obligatorio)</label><select id="name"></select></div>
 <div class="field"><label for="price">Precio (decimal)</label><select id="price"></select></div>
 </div>
+<p class="small muted">En este esquema el SKU es único. Si se repite, se revisan todas sus apariciones. Diferentes precios o nombres no generan automáticamente productos distintos.</p>
 <button id="validate" type="button" disabled>Validar importación</button>
 <p id="feedback" role="status" aria-live="polite"></p>
 </section>
@@ -48,8 +49,10 @@ th,td{text-align:left;border-bottom:1px solid var(--line);padding:10px;white-spa
 <h2>3. Resultado</h2>
 <p id="summary"></p>
 <div class="tablewrap"><table><thead><tr><th>Fila origen</th><th>SKU</th><th>Nombre</th><th>Precio</th><th>Resultado</th></tr></thead><tbody id="rows"></tbody></table></div>
+<p id="row-limit" class="small muted" hidden>Vista limitada a las primeras 50 filas; la validación y los CSV incluyen todos los registros.</p>
 <button id="download" type="button" disabled>Descargar CSV válido</button>
-<p class="small muted">Las filas erróneas se excluyen de la exportación. Verifica el resultado antes de utilizarlo en sistemas reales.</p>
+<button id="download-errors" class="ghost" type="button" disabled>Descargar reporte de errores</button>
+<p class="small muted">Los SKU repetidos, incluso con precios diferentes, se excluyen en todas sus apariciones hasta ser revisados. El CSV válido no incluye filas con errores. Comprueba el esquema y los datos antes de usarlos en sistemas reales.</p>
 </section>
 <section class="panel">
 <h2>4. ¿Te enfrentas a este problema?</h2>
