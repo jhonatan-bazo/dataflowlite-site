@@ -20,6 +20,8 @@ Landing pública y demostración local de CSV para investigar la demanda de una 
 - El procesamiento de archivos ocurre en el navegador del usuario. No se recopilan ni almacenan archivos.
 - El enlace de contacto utiliza `mailto:`; no existe formulario web ni lista automática.
 
+- La demo identifica la versión **1.2** en la interfaz. Los archivos JavaScript usan parámetros de versión para evitar mezclar HTML actualizado con código cacheado. Al cambiar de modo, la pantalla muestra el modo activo y exige volver a validar.
+
 ## Desarrollo y pruebas
 
 Es un sitio estático sin dependencias externas. Sirve `index.html`, `demo.html`, `logic.js` y `demo.js` desde cualquier hosting de archivos estáticos.

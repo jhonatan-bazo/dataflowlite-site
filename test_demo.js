@@ -3,6 +3,12 @@ const fs = require("node:fs");
 const api = require("./logic.js");
 const sourceCode = fs.readFileSync(__dirname + "/demo.js", "utf8");
 
+const html = fs.readFileSync(__dirname + "/demo.html", "utf8");
+assert.match(html, /id="mode-status"/);
+assert.match(html, /<script src="logic\.js\?v=20261008-12"><\/script>/);
+assert.match(html, /<script src="demo\.js\?v=20261008-12"><\/script>/);
+
+
 class MockElement {
   constructor() {
     this.children = [];
@@ -24,7 +30,7 @@ class MockElement {
 }
 const ids = ["file","sample","feedback","result","sku","name","price",
  "validate","summary","rows","row-limit","download","download-errors",
- "allow-variants","variant-note"];
+ "allow-variants","variant-note","mode-status"];
 const controls = Object.fromEntries(ids.map(id => [id,new MockElement()]));
 const anchors = [], blobs = [];
 const document = {
@@ -78,8 +84,10 @@ controls.sku.dispatch("change");
 controls.validate.dispatch("click");
 assert.equal(controls.result.hidden,false);
 
+assert.match(controls["mode-status"].textContent,/SKU único/);
 controls["allow-variants"].checked=true;
 controls["allow-variants"].dispatch("change");
+assert.match(controls["mode-status"].textContent,/se permiten variaciones/);
 assert.equal(controls.result.hidden,true);
 assert.equal(controls.download.disabled,true);
 assert.equal(controls["variant-note"].hidden,false);
@@ -99,6 +107,7 @@ controls["allow-variants"].checked=false;
 controls["allow-variants"].dispatch("change");
 assert.equal(controls.result.hidden,true);
 assert.equal(controls["variant-note"].hidden,true);
+assert.match(controls["mode-status"].textContent,/SKU único/);
 controls.validate.dispatch("click");
 assert.match(controls.summary.textContent,/4 registros · 1 válido · 3 con errores/);
 

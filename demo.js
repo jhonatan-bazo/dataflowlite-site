@@ -16,6 +16,15 @@ function clearResults() {
   $("download-errors").disabled = true;
 }
 
+function updateModeStatus() {
+  const checked = $("allow-variants").checked === true;
+  $("variant-note").hidden = !checked;
+  $("mode-status").textContent = checked
+    ? "Modo activo: se permiten variaciones de SKU cuando difiere el nombre o el precio. Se rechazan duplicados idénticos."
+    : "Modo activo: SKU único. Los SKU repetidos se rechazan.";
+  return checked;
+}
+
 function setOptions(headers) {
   const patterns = {
     sku: /sku|codigo|código|product.?id|referencia/i,
@@ -92,10 +101,11 @@ $("file").addEventListener("change", async event => {
 for (const id of ["sku", "name", "price", "allow-variants"]) {
   $(id).addEventListener("change", () => {
     clearResults();
-    $("variant-note").hidden = !$("allow-variants").checked;
+    updateModeStatus();
     status("Cambió la configuración. Valida de nuevo antes de exportar.");
   });
 }
+updateModeStatus();
 
 $("validate").addEventListener("click", () => {
   clearResults();
@@ -105,9 +115,8 @@ $("validate").addEventListener("click", () => {
     return;
   }
   try {
-    results = CSVTools.validateRecords(source, indices.map(Number), {
-      allowDistinctSku: $("allow-variants").checked
-    });
+    const allowDistinctSku = updateModeStatus();
+    results = CSVTools.validateRecords(source, indices.map(Number), { allowDistinctSku });
     const valid = results.filter(row => row.errors.length === 0);
     const invalid = results.length - valid.length;
     const warned = valid.filter(row => row.warnings.length > 0).length;
@@ -139,9 +148,9 @@ $("validate").addEventListener("click", () => {
     $("result").hidden = false;
     $("download").disabled = valid.length === 0;
     $("download-errors").disabled = invalid === 0;
-    status($("allow-variants").checked ?
-      "Validación terminada. Las variaciones de SKU pueden exportarse; los duplicados idénticos siguen bloqueados." :
-      "Validación terminada. Ningún SKU repetido se exportará automáticamente.");
+    status(allowDistinctSku ?
+      "Validación en modo variantes completada. Se exportan las variaciones admitidas con advertencia." :
+      "Validación en modo SKU único completada. Todos los SKU repetidos quedaron excluidos.");
   } catch (error) {
     status(error.message || "No se pudo validar el archivo.", true);
   }

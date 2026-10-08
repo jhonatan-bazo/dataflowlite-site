@@ -26,7 +26,7 @@ th,td{text-align:left;border-bottom:1px solid var(--line);padding:10px;white-spa
 <body>
 <main>
 <a href="index.html">← Volver a la propuesta</a>
-<p class="badge">Prototipo navegable · CSV solamente</p>
+<p class="badge">Prototipo navegable · CSV solamente · Versión 1.2</p>
 <h1>Convierte un CSV al formato de tu sistema.</h1>
 <p>Prueba un ejemplo: asigna las columnas a <strong>SKU, Nombre y Precio</strong>, valida los registros y descarga un CSV con un esquema fijo. El procesamiento ocurre en tu navegador; no transmitimos archivos a ningún servidor.</p>
 <section class="panel">
@@ -44,6 +44,7 @@ th,td{text-align:left;border-bottom:1px solid var(--line);padding:10px;white-spa
 <div class="field"><label for="price">Precio (decimal)</label><select id="price"></select></div>
 </div>
 <label class="checklabel" for="allow-variants"><input type="checkbox" id="allow-variants"><span>Permitir SKU repetidos si el nombre o el precio son diferentes</span></label>
+<p id="mode-status" class="notice" role="status" aria-live="polite">Modo activo: SKU único. Los SKU repetidos se rechazan.</p>
 <p class="small muted">Desactivado por defecto. Con la opción activada se admiten variaciones, pero los registros idénticos y los datos inválidos siguen bloqueados.</p>
 <p id="variant-note" class="notice" hidden>Atención: algunos sistemas ERP/POS requieren SKU únicos. Si importas registros repetidos, el destino podría rechazarlos, sobrescribir productos o aplicar reglas distintas. Revisa el archivo antes de utilizarlo.</p>
 <button id="validate" type="button" disabled>Validar importación</button>
@@ -66,6 +67,6 @@ th,td{text-align:left;border-bottom:1px solid var(--line);padding:10px;white-spa
 </section>
 <footer>DataFlow Lite · Prototipo de investigación comercial. Esta demo no almacena datos ni llama a servicios de red. El enlace de contacto abre tu cliente de correo.</footer>
 </main>
-<script src="logic.js"></script><script src="demo.js"></script>
+<script src="logic.js?v=20261008-12"></script><script src="demo.js?v=20261008-12"></script>
 </body>
 </html>
