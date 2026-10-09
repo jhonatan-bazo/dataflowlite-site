@@ -35,3 +35,10 @@ Además, `.github/workflows/quality.yml` ejecuta estas pruebas y una suite E2E d
 hola.dataflowlite@gmail.com. No envíes información comercial confidencial ni archivos de clientes.
 
 Esta página presenta una propuesta de investigación, no una promesa de funciones disponibles.
+
+## Hipótesis de precio inicial (Perú)
+
+- Precio piloto en validación: **S/49 PEN, pago único** para una futura versión comercial que incluya CSV/XLSX y perfiles reutilizables.
+- Segunda referencia a estudiar en entrevistas: **S/69 PEN**. Todavía no se ha validado la disposición a pagar.
+- El sitio es una demo gratuita. **No habilitar checkout ni reservas** antes de construir y verificar el entregable comercial.
+- La moneda de la licencia no determina la moneda de los campos CSV, que actualmente se interpretan sin símbolo monetario.
