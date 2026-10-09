@@ -28,6 +28,8 @@ Es un sitio estático sin dependencias externas. Sirve `index.html`, `demo.html`
 
 Para ejecutar las pruebas con Node.js (sin dependencias): `node test_logic.js` y `node test_demo.js`.
 
+Además, `.github/workflows/quality.yml` ejecuta estas pruebas y una suite E2E de **Chromium real** (`tests/test_browser.py`) en cada push y PR. Pages despliega de forma independiente: verifica el resultado del flujo de calidad antes de distribuir una versión.
+
 ## Contacto
 
 hola.dataflowlite@gmail.com. No envíes información comercial confidencial ni archivos de clientes.
