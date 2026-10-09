@@ -20,7 +20,7 @@
     }
     const order = [";", ",", "\t"];
     order.sort((a, b) => counts[b] - counts[a]);
-    if (!counts[order[0]]) throw new Error("No se detectó un separador CSV (; , o tabulación).");
+    if (!counts[order[0]]) return ","; // A CSV with one column has no separator.
     return order[0];
   }
 

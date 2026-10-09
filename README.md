@@ -51,3 +51,5 @@ Esta página presenta una propuesta de investigación, no una promesa de funcion
 - Exporta todas las columnas originales en el CSV validado y un reporte de errores con las mismas columnas.
 - El procesador específico `demo.html` continúa disponible como plantilla de inventario; conserva sus pruebas y comportamiento.
 - La demo sigue siendo una prueba de concepto, no admite XLSX y no guarda perfiles.
+
+Pruebas del modo general: `node test_general_logic.js` y `tests/test_general_browser.py` (Chromium real).
