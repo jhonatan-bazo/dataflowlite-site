@@ -25,7 +25,7 @@
   }
 
   // Returns physical start-line numbers, including quoted multiline fields.
-  function parseRecords(content) {
+  function parseRecords(content, options = {}) {
     if (typeof content !== "string") throw new TypeError("El CSV debe ser texto.");
     let input = content.replace(/^\uFEFF/, "");
     if (!input.trim()) return [];
@@ -86,7 +86,7 @@
     for (const record of records.slice(1)) {
       // Empty physical lines are ignored, not treated as malformed data rows.
       if (record.cells.length === 1 && !record.cells[0].trim()) continue;
-      if (record.cells.length !== header.cells.length) {
+      if (record.cells.length !== header.cells.length && options.allowColumnMismatch !== true) {
         throw new Error("La línea " + record.line + " tiene " + record.cells.length +
           " columnas; se esperaban " + header.cells.length + ".");
       }
@@ -196,13 +196,16 @@
       if (!rule || !supported.has(rule.type)) throw Error("Tipo de columna desconocido.");
     }
     const rows = records.filter(record => record.cells.some(cell => cell.trim() !== "")).map(record => {
-      if (!record || !Array.isArray(record.cells) || record.cells.length !== headers.length) {
-        throw Error("Registro con estructura de columnas incorrecta.");
+      if (!record || !Array.isArray(record.cells)) {
+        throw Error("Registro CSV inválido.");
       }
       const errors = [];
+      if (record.cells.length !== headers.length) {
+        errors.push("Estructura: " + record.cells.length + " columnas; se esperaban " + headers.length);
+      }
       for (let i = 0; i < headers.length; i++) {
         const rule = rules[i];
-        const value = record.cells[i].trim();
+        const value = (record.cells[i] ?? "").trim();
         const name = headers[i].trim() || "Columna " + (i + 1);
         if (!value) {
           if (rule.required === true) errors.push(name + ": valor obligatorio");
@@ -241,7 +244,7 @@
       if (rules[column].unique !== true) continue;
       const seen = new Map();
       for (const row of rows) {
-        const key = row.cells[column].trim().toLocaleLowerCase();
+        const key = (row.cells[column] ?? "").trim().toLocaleLowerCase();
         if (!key) continue; // A separate 'required' check handles empty fields.
         if (!seen.has(key)) seen.set(key, []);
         seen.get(key).push(row);

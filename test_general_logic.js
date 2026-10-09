@@ -36,4 +36,23 @@ assert.throws(()=>t.validateGeneralRecords(records,headers,Array(5).fill({type:"
 const output=t.serialize([headers, ...relaxed.map(row=>row.cells)]);
 assert.equal(t.parse(output)[0].length,5);
 assert.equal(t.parse(output).length,4);
-console.log("PASS: validación CSV general, reglas configurables y conservación de columnas.");
+
+const tolerant=t.parseRecords("A;B;C\n1;2;3\n4;5\n6;7;8;9", {allowColumnMismatch:true});
+assert.equal(tolerant.length,4);
+assert.deepEqual(tolerant.map(x=>x.line),[1,2,3,4]);
+assert.throws(()=>t.parseRecords("A;B;C\n4;5"),/columnas/);
+const structural=t.validateGeneralRecords(tolerant.slice(1),["A","B","C"],[
+ {type:"integer",required:true,unique:false},
+ {type:"integer",required:true,unique:false},
+ {type:"integer",required:true,unique:false}
+],{rejectIdentical:false});
+assert.equal(structural[0].errors.length,0);
+assert.match(structural[1].errors.join("; "),/Estructura: 2 columnas; se esperaban 3/);
+assert.match(structural[1].errors.join("; "),/valor obligatorio/);
+assert.match(structural[2].errors.join("; "),/Estructura: 4 columnas; se esperaban 3/);
+assert.deepEqual(structural[2].cells,["6","7","8","9"]);
+const repeatLabels=t.validateGeneralRecords(t.parseRecords("A;B\nX;Y\n X ; Y ").slice(1), ["A","B"],
+ [{type:"text",required:false,unique:false},{type:"text",required:false,unique:false}],{rejectIdentical:true});
+assert.ok(repeatLabels.every(r=>r.errors.join().includes("Fila completamente duplicada")));
+
+console.log("PASS: validación CSV general, filas mal formadas, reglas y exportación.");

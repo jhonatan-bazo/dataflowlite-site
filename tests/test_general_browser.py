@@ -73,6 +73,31 @@ class GeneralTests(unittest.TestCase):
         self.page.get_by_role("combobox",name="Tipo de B").select_option("integer")
         self.page.locator("#validate").click()
         expect(self.page.locator("#summary")).to_contain_text("2 válidos")
+    def test_malformed_rows_are_reported_without_losing_valid_rows(self):
+        self.upload(b"ID;Nombre;Edad\n1;Ana;20\n2;Beto\n3;Cami;30;EXTRA")
+        expect(self.page.locator("#source-info")).to_contain_text("2 filas con cantidad de columnas diferente")
+        self.page.locator("#validate").click()
+        expect(self.page.locator("#summary")).to_contain_text("1 válidos")
+        expect(self.page.locator("#summary")).to_contain_text("2 con errores")
+        self.assertEqual(self.export("#download-valid"),[
+          ["ID","Nombre","Edad"],["1","Ana","20"]
+        ])
+        summary=self.export("#download-errors")
+        self.assertEqual(summary[0],[
+          "Fila origen","ID","Nombre","Edad","Columnas adicionales (JSON)","Errores"
+        ])
+        self.assertEqual(summary[1][3],"")
+        self.assertEqual(summary[2][4],'["EXTRA"]')
+        self.assertIn("Estructura:",summary[1][-1])
+
+    def test_sample_has_explicit_rules_and_flags_errors(self):
+        self.page.locator("#sample").click()
+        expect(self.page.get_by_role("combobox",name="Tipo de Correo")).to_have_value("email")
+        expect(self.page.get_by_role("combobox",name="Tipo de Fecha")).to_have_value("date")
+        self.page.locator("#validate").click()
+        expect(self.page.locator("#summary")).to_contain_text("3 con errores")
+        expect(self.page.locator("#result-rows")).to_contain_text("correo electrónico inválido")
+
     def test_single_column_and_xss_safety(self):
         self.upload(b"Mensaje\n'=2+3\nHola")
         self.page.locator("#validate").click()
