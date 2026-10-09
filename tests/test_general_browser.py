@@ -77,7 +77,7 @@ class GeneralTests(unittest.TestCase):
         self.upload(b"ID;Nombre;Edad\n1;Ana;20\n2;Beto\n3;Cami;30;EXTRA")
         expect(self.page.locator("#source-info")).to_contain_text("2 filas con cantidad de columnas diferente")
         self.page.locator("#validate").click()
-        expect(self.page.locator("#summary")).to_contain_text("1 válidos")
+        expect(self.page.locator("#summary")).to_contain_text("1 válido")
         expect(self.page.locator("#summary")).to_contain_text("2 con errores")
         self.assertEqual(self.export("#download-valid"),[
           ["ID","Nombre","Edad"],["1","Ana","20"]

@@ -76,6 +76,25 @@ class SiteTests(unittest.TestCase):
         expect(self.page).to_have_url(self.base + "/demo.html")
         expect(self.page.locator("#mode-status")).to_contain_text("SKU único")
 
+    def test_landing_ctas_on_mobile(self):
+        self.page.set_viewport_size({"width":390,"height":844})
+        response=self.page.goto(self.base+"/index.html",wait_until="load")
+        self.assertEqual(response.status,200)
+        general=self.page.get_by_role("link",name="Probar validador CSV general")
+        inventory=self.page.get_by_role("link",name="Probar plantilla de inventario")
+        expect(general).to_be_visible()
+        expect(inventory).to_be_visible()
+        self.assertNotEqual(inventory.evaluate("(el)=>getComputedStyle(el).borderTopWidth"),"0px")
+        self.assertEqual(inventory.get_attribute("href"),"demo.html")
+        self.assertEqual(general.get_attribute("href"),"general.html")
+        self.assertFalse(self.page.evaluate(
+            "()=>document.documentElement.scrollWidth>window.innerWidth+1"
+        ),"La landing tiene desbordamiento horizontal en móvil")
+        general.click()
+        expect(self.page).to_have_url(self.base+"/general.html")
+        self.page.get_by_role("link",name="Probar plantilla de inventario").click()
+        expect(self.page).to_have_url(self.base+"/demo.html")
+
     def test_default_blocks_both_duplicates(self):
         self.load_example()
         self.validate()
