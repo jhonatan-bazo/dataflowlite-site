@@ -7,7 +7,7 @@ const html = fs.readFileSync(__dirname + "/demo.html", "utf8");
 assert.match(html, /id="mode-status"/);
 assert.match(html, /id="source-info"/);
 assert.match(html, /id="source-preview"/);
-assert.match(html, /<script src="logic\.js\?v=20261009-13"><\/script>/);
+assert.match(html, /<script src="logic\.js\?v=20261009-15"><\/script>/);
 assert.match(html, /<script src="demo\.js\?v=20261009-13"><\/script>/);
 
 

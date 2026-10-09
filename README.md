@@ -53,3 +53,11 @@ Esta página presenta una propuesta de investigación, no una promesa de funcion
 - La demo sigue siendo una prueba de concepto, no admite XLSX y no guarda perfiles.
 
 Pruebas del modo general: `node test_general_logic.js` y `tests/test_general_browser.py` (Chromium real).
+
+## Revisión visual y de integridad de datos (1.5)
+
+- Los enlaces de ambas demos son botones claramente diferenciados y accesibles desde la landing. Se añadieron indicadores de foco para navegación por teclado y enlaces cruzados.
+- En el validador general, los CSV propios no reciben reglas automáticas de tipos; el ejemplo de clientes precarga reglas explícitas para demostrar errores.
+- Las filas con cantidad de columnas distinta se detectan y reportan individualmente; las filas correctas todavía se pueden exportar. El reporte de errores conserva los datos excedentes como lista JSON en una columna adicional.
+- La opción «filas repetidas» compara valores quitando espacios al inicio y final y marca todas las apariciones, sin elegir una arbitrariamente.
+- Las dos demos siguen procesando archivos localmente y la versión comercial continúa sin estar disponible.

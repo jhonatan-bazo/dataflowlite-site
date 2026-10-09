@@ -69,7 +69,10 @@ class SiteTests(unittest.TestCase):
         expect(self.page.locator("#precio-piloto")).to_contain_text("S/49")
         expect(self.page.locator("#precio-piloto")).to_contain_text("no hay ventas ni reservas")
         self.assertEqual(self.page.locator("a[href^='mailto:']").count() > 0, True)
-        self.page.get_by_role("link", name="Plantilla de inventario").first.click()
+        link = self.page.get_by_role("link", name="Probar plantilla de inventario")
+        expect(link).to_be_visible()
+        self.assertNotEqual(link.evaluate("(el) => getComputedStyle(el).borderTopWidth"),"0px")
+        link.click()
         expect(self.page).to_have_url(self.base + "/demo.html")
         expect(self.page.locator("#mode-status")).to_contain_text("SKU único")
 
