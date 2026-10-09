@@ -42,3 +42,12 @@ Esta página presenta una propuesta de investigación, no una promesa de funcion
 - Segunda referencia a estudiar en entrevistas: **S/69 PEN**. Todavía no se ha validado la disposición a pagar.
 - El sitio es una demo gratuita. **No habilitar checkout ni reservas** antes de construir y verificar el entregable comercial.
 - La moneda de la licencia no determina la moneda de los campos CSV, que actualmente se interpretan sin símbolo monetario.
+
+## Modo de validación general (1.4)
+
+- La entrada principal de la demo es `general.html`, que conserva cualquier conjunto de columnas CSV de 1 o más campos.
+- Reglas por columna: texto, entero, decimal, correo, fecha ISO, campo obligatorio y valor único.
+- Opción para excluir filas completamente repetidas; sin inferencias automáticas de tipos ni obligatoriedad.
+- Exporta todas las columnas originales en el CSV validado y un reporte de errores con las mismas columnas.
+- El procesador específico `demo.html` continúa disponible como plantilla de inventario; conserva sus pruebas y comportamiento.
+- La demo sigue siendo una prueba de concepto, no admite XLSX y no guarda perfiles.

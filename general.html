@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Valida cualquier CSV localmente, configura tipos y columnas obligatorias, identifica duplicados y exporta conservando todos los campos.">
+<title>DataFlow Lite — Validador CSV general</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark;--bg:#0b1423;--panel:#14253b;--line:#30465c;--text:#ebf5fe;--muted:#a9bdcf;--accent:#75e4d6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text)}
+main{max-width:1080px;margin:auto;padding:30px 18px 80px}
+nav{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+a{color:var(--accent)}
+h1{font-size:clamp(29px,4vw,42px);line-height:1.15;margin:16px 0}
+h2{font-size:24px}
+p{line-height:1.6;color:var(--muted)}
+.panel{padding:24px;border-radius:16px;background:var(--panel);border:1px solid var(--line);margin:20px 0}
+.badge{display:inline-block;border:1px solid #49737b;color:var(--accent);padding:6px 12px;border-radius:30px;font-size:12px}
+button{background:var(--accent);color:#09222e;border:0;border-radius:9px;padding:12px 18px;font-weight:750;cursor:pointer;margin:12px 9px 0 0}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.ghost{background:#2a4354;color:#f1f7fd}
+input[type=file]{padding:12px 0;max-width:100%;width:100%}
+input[type=checkbox]{accent-color:var(--accent);width:17px;height:17px}
+label{cursor:pointer}
+.tablewrap{overflow:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:11px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--accent)}
+select{background:#0e2032;color:var(--text);border:1px solid #496077;padding:9px;border-radius:8px;min-width:135px}
+.notice{background:#1b3346;border-radius:9px;padding:12px;overflow-wrap:anywhere}
+.ok{color:#8bedb8}.error{color:#ffb4a1}.muted{color:var(--muted)}.small{font-size:13px}
+#result-table td:last-child{white-space:normal;min-width:250px}
+footer{margin-top:32px;color:var(--muted);font-size:13px}
+@media(max-width:600px){.panel{padding:16px}th,td{padding:9px}select{min-width:115px}}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="index.html">← Volver al inicio</a><a href="demo.html">Probar plantilla de inventario →</a></nav>
+<p class="badge">Demo gratuita · CSV general · Versión 1.4</p>
+<h1>Valida cualquier archivo CSV sin cambiar su estructura.</h1>
+<p>Configura las reglas para las columnas de tu archivo: campos obligatorios, tipo de datos, valores únicos y filas duplicadas. Descarga el resultado conservando <strong>todas las columnas originales</strong>. Todo se procesa en tu navegador.</p>
+<section class="panel">
+<h2>1. Cargar CSV</h2>
+<p>CSV UTF-8, Windows-1252 o UTF-16 con BOM, hasta 5 MB. Se admiten coma, punto y coma y tabulación; no archivos XLSX.</p>
+<input type="file" id="file" accept=".csv,.txt,.tsv,text/csv,text/tab-separated-values" aria-label="Seleccionar un archivo CSV">
+<button type="button" id="sample" class="ghost">Cargar ejemplo de clientes</button>
+<p id="source-info" class="notice" role="status" aria-live="polite">Ningún archivo cargado.</p>
+<div class="tablewrap" id="preview" hidden>
+<p class="small muted">Vista previa de las primeras tres filas:</p>
+<table><thead id="preview-head"></thead><tbody id="preview-rows"></tbody></table>
+</div>
+</section>
+<section class="panel">
+<h2>2. Reglas configurables</h2>
+<p>Deja una columna como <strong>Texto</strong> para no restringirla. Ninguna columna se considera obligatoria ni única automáticamente. Las reglas solo se aplican si las activas.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Columna</th><th>Tipo de datos</th><th>Obligatoria</th><th>Valor único</th></tr></thead>
+<tbody id="rules"><tr><td colspan="4" class="muted">Carga un CSV para configurar reglas.</td></tr></tbody>
+</table></div>
+<p><label><input id="reject-identical" type="checkbox" checked> Excluir todas las filas completamente idénticas</label></p>
+<button id="validate" type="button" disabled>Validar CSV</button>
+<p id="feedback" role="status" aria-live="polite"></p>
+</section>
+<section class="panel" id="result" hidden>
+<h2>3. Resultado</h2>
+<p id="summary"></p>
+<div class="tablewrap"><table id="result-table"><thead><tr><th>Fila origen</th><th>Datos originales (resumen)</th><th>Validación</th></tr></thead><tbody id="result-rows"></tbody></table></div>
+<p id="row-limit" class="small muted" hidden>Se muestran las primeras 50 filas, pero las descargas abarcan todo el archivo.</p>
+<button id="download-valid" type="button" disabled>Descargar CSV válido</button>
+<button id="download-errors" type="button" class="ghost" disabled>Descargar CSV de errores</button>
+<p class="small muted">La exportación conserva todos los encabezados y las columnas del archivo original. Los errores se exportan por separado con el número de línea y los motivos. La protección contra fórmulas CSV puede anteponer un apóstrofo a ciertos valores.</p>
+</section>
+<section class="panel">
+<h2>¿Necesitas preparar archivos recurrentes?</h2>
+<p>La validación general es una prueba de concepto. La futura aplicación de pago podrá ofrecer plantillas reutilizables, importación Excel y configuraciones de destino. Actualmente no se venden licencias.</p>
+<a href="mailto:hola.dataflowlite@gmail.com?subject=DataFlow%20Lite%20-%20feedback%20validador%20CSV">Compartir opinión por correo →</a>
+</section>
+<footer>DataFlow Lite · Demo sin backend ni subida de archivos. Comprueba siempre los resultados antes de importarlos a otro sistema.</footer>
+</main>
+<script src="logic.js?v=20261009-14"></script>
+<script src="general.js?v=20261009-14"></script>
+</body>
+</html>

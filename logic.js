@@ -186,6 +186,90 @@
     return rows;
   }
 
+  function validateGeneralRecords(records, headers, rules, options = {}) {
+    if (!Array.isArray(headers) || headers.length === 0 ||
+        !Array.isArray(rules) || rules.length !== headers.length) {
+      throw Error("Las reglas deben corresponder a todas las columnas del CSV.");
+    }
+    const supported = new Set(["text", "integer", "decimal", "date", "email"]);
+    for (const rule of rules) {
+      if (!rule || !supported.has(rule.type)) throw Error("Tipo de columna desconocido.");
+    }
+    const rows = records.filter(record => record.cells.some(cell => cell.trim() !== "")).map(record => {
+      if (!record || !Array.isArray(record.cells) || record.cells.length !== headers.length) {
+        throw Error("Registro con estructura de columnas incorrecta.");
+      }
+      const errors = [];
+      for (let i = 0; i < headers.length; i++) {
+        const rule = rules[i];
+        const value = record.cells[i].trim();
+        const name = headers[i].trim() || "Columna " + (i + 1);
+        if (!value) {
+          if (rule.required === true) errors.push(name + ": valor obligatorio");
+          continue;
+        }
+        if (rule.type === "integer" && !/^[+-]?\d+$/.test(value)) {
+          errors.push(name + ": debe ser un número entero");
+        } else if (rule.type === "decimal" &&
+                   !/^[+-]?\d+(?:[.,]\d+)?$/.test(value)) {
+          errors.push(name + ": debe ser un número decimal sin separadores de miles");
+        } else if (rule.type === "email" &&
+                   !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          errors.push(name + ": correo electrónico inválido");
+        } else if (rule.type === "date") {
+          const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+          if (!match) errors.push(name + ": fecha inválida, usa AAAA-MM-DD");
+          else {
+            const year = Number(match[1]), month = Number(match[2]), day = Number(match[3]);
+            const d = new Date(Date.UTC(2000, month - 1, day));
+            d.setUTCFullYear(year);
+            if (d.getUTCFullYear() !== year || d.getUTCMonth() + 1 !== month ||
+                d.getUTCDate() !== day) {
+              errors.push(name + ": fecha inexistente");
+            }
+          }
+        }
+      }
+      return {line: record.line, cells: [...record.cells], errors};
+    });
+
+    function addDuplicateErrors(group, message) {
+      for (const row of group) row.errors.push(message);
+    }
+
+    for (let column = 0; column < headers.length; column++) {
+      if (rules[column].unique !== true) continue;
+      const seen = new Map();
+      for (const row of rows) {
+        const key = row.cells[column].trim().toLocaleLowerCase();
+        if (!key) continue; // A separate 'required' check handles empty fields.
+        if (!seen.has(key)) seen.set(key, []);
+        seen.get(key).push(row);
+      }
+      for (const group of seen.values()) {
+        if (group.length <= 1) continue;
+        const name = headers[column].trim() || "Columna " + (column + 1);
+        addDuplicateErrors(group, name + ": valor duplicado en líneas " +
+          group.map(row => row.line).join(", "));
+      }
+    }
+
+    if (options.rejectIdentical === true) {
+      const groups = new Map();
+      for (const row of rows) {
+        const key = JSON.stringify(row.cells.map(cell => cell.trim()));
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(row);
+      }
+      for (const group of groups.values()) {
+        if (group.length <= 1) continue;
+        addDuplicateErrors(group, "Fila completamente duplicada en líneas " +
+          group.map(row => row.line).join(", "));
+      }
+    }
+    return rows;
+  }
+
   function escapeField(value) {
     let text = String(value ?? "");
     // Mitigates spreadsheet formula injection even when preceded by whitespace.
@@ -197,7 +281,7 @@
     return rows.map(row => row.map(escapeField).join(",")).join("\r\n") + "\r\n";
   }
 
-  const api = { parseRecords, parse, parsePrice, validateRecords, serialize };
+  const api = { parseRecords, parse, parsePrice, validateRecords, validateGeneralRecords, serialize };
   root.CSVTools = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window === "undefined" ? globalThis : window);
