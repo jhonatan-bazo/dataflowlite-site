@@ -27,12 +27,13 @@
   // Returns physical start-line numbers, including quoted multiline fields.
   function parseRecords(content) {
     if (typeof content !== "string") throw new TypeError("El CSV debe ser texto.");
-    const input = content.replace(/^\uFEFF/, "");
+    let input = content.replace(/^\uFEFF/, "");
     if (!input.trim()) return [];
-
-    const delimiter = detectDelimiter(input);
+    const hint = /^sep=([;,\t])(?:\r\n|\n|\r)/i.exec(input);
+    const delimiter = hint ? hint[1] : detectDelimiter(input);
+    if (hint) input = input.slice(hint[0].length);
     const records = [];
-    let line = 1, startLine = 1, field = "", cells = [];
+    let line = hint ? 2 : 1, startLine = line, field = "", cells = [];
     let quoted = false, afterQuote = false;
 
     function pushRecord() {

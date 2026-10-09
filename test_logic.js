@@ -68,4 +68,5 @@ assert.match(invalidVariant[1].errors[0],/Precio inválido/);
 const solo=t.validateRecords(t.parseRecords("s;n;p\nX;Uno;13").slice(1),[0,1,2],{allowDistinctSku:true});
 assert.equal(solo[0].warnings.length,0);
 
-console.log("PASS: pruebas lógicas, SKU únicos, variantes opcionales, duplicados idénticos y errores de formato.");
+assert.deepEqual(t.parseRecords("sep=;\nSKU;Nombre;Precio\nA;Lápiz;10").map(r=>r.line),[2,3]);
+console.log("PASS: pruebas lógicas, CSV de Excel y SKU.");

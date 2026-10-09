@@ -10,7 +10,7 @@ Landing pública y demostración local de CSV para investigar la demanda de una 
 ## Estado y límites
 
 - Prototipo comercial **en validación**. Todavía no hay un producto de escritorio disponible ni ventas.
-- La demo admite **CSV UTF-8 hasta 5 MB**, no XLSX; transforma tres campos a un esquema fijo de SKU, Nombre y Precio.
+- La demo admite **CSV hasta 5 MB** (UTF-8, Windows-1252 y UTF-16 con BOM), no XLSX; transforma tres campos a un esquema fijo de SKU, Nombre y Precio.
 - Regla predeterminada: SKU único (sin distinguir mayúsculas); ante repetidos, bloquea **todas** las filas asociadas y permite exportar un CSV de errores.
 - Casilla opcional «Permitir SKU repetidos si el nombre o el precio son diferentes»: admite variaciones con advertencia, pero sigue bloqueando duplicados idénticos y campos inválidos. La opción parte desactivada; úsala solo si tu ERP/POS admite múltiples filas por SKU.
 - El CSV válido incluye las variaciones admitidas cuando se activa la opción. No realiza importaciones ni evita que el ERP/POS sobrescriba o rechace registros.
@@ -20,7 +20,7 @@ Landing pública y demostración local de CSV para investigar la demanda de una 
 - El procesamiento de archivos ocurre en el navegador del usuario. No se recopilan ni almacenan archivos.
 - El enlace de contacto utiliza `mailto:`; no existe formulario web ni lista automática.
 
-- La demo identifica la versión **1.2** en la interfaz. Los archivos JavaScript usan parámetros de versión para evitar mezclar HTML actualizado con código cacheado. Al cambiar de modo, la pantalla muestra el modo activo y exige volver a validar.
+- La demo identifica la versión **1.3** en la interfaz. Confirma el archivo cargado, muestra vista previa y limpia los encabezados tras errores; permite `sep=;` en CSV exportados desde Excel. Los archivos JavaScript usan parámetros de versión para evitar mezclar HTML actualizado con código cacheado. Al cambiar de modo, la pantalla muestra el modo activo y exige volver a validar.
 
 ## Desarrollo y pruebas
 

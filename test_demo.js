@@ -5,8 +5,10 @@ const sourceCode = fs.readFileSync(__dirname + "/demo.js", "utf8");
 
 const html = fs.readFileSync(__dirname + "/demo.html", "utf8");
 assert.match(html, /id="mode-status"/);
-assert.match(html, /<script src="logic\.js\?v=20261008-12"><\/script>/);
-assert.match(html, /<script src="demo\.js\?v=20261008-12"><\/script>/);
+assert.match(html, /id="source-info"/);
+assert.match(html, /id="source-preview"/);
+assert.match(html, /<script src="logic\.js\?v=20261009-13"><\/script>/);
+assert.match(html, /<script src="demo\.js\?v=20261009-13"><\/script>/);
 
 
 class MockElement {
@@ -30,7 +32,7 @@ class MockElement {
 }
 const ids = ["file","sample","feedback","result","sku","name","price",
  "validate","summary","rows","row-limit","download","download-errors",
- "allow-variants","variant-note","mode-status"];
+ "allow-variants","variant-note","mode-status","source-info","source-preview","preview-head","preview-body"];
 const controls = Object.fromEntries(ids.map(id => [id,new MockElement()]));
 const anchors = [], blobs = [];
 const document = {
@@ -51,6 +53,8 @@ new Function("document","CSVTools","TextEncoder","TextDecoder","Blob","URL","set
   document,api,TextEncoder,TextDecoder,FakeBlob,url,()=>{}
 );
 controls.sample.dispatch("click");
+assert.match(controls["source-info"].textContent,/Ejemplo incluido/);
+assert.equal(controls["preview-head"].children[0].children[0].textContent,"Codigo");
 assert.equal(controls.validate.disabled,false);
 assert.match(controls.feedback.textContent,/4 filas/);
 controls.validate.dispatch("click");

@@ -26,15 +26,17 @@ th,td{text-align:left;border-bottom:1px solid var(--line);padding:10px;white-spa
 <body>
 <main>
 <a href="index.html">← Volver a la propuesta</a>
-<p class="badge">Prototipo navegable · CSV solamente · Versión 1.2</p>
+<p class="badge">Prototipo navegable · CSV solamente · Versión 1.3</p>
 <h1>Convierte un CSV al formato de tu sistema.</h1>
 <p>Prueba un ejemplo: asigna las columnas a <strong>SKU, Nombre y Precio</strong>, valida los registros y descarga un CSV con un esquema fijo. El procesamiento ocurre en tu navegador; no transmitimos archivos a ningún servidor.</p>
 <section class="panel">
 <h2>1. Archivo de origen</h2>
-<p>Selecciona un archivo CSV UTF-8 de hasta 5 MB o carga el ejemplo que contiene errores intencionales.</p>
-<input type="file" id="file" accept=".csv,text/csv">
+<p>Selecciona un CSV de hasta 5 MB. Verás su nombre, las columnas reales y una vista previa. También puedes cargar el ejemplo.</p>
+<input type="file" id="file" accept=".csv,.txt,.tsv,text/csv,text/tab-separated-values">
+<p id="source-info" class="notice" role="status" aria-live="polite">Ningún CSV cargado.</p>
+<div id="source-preview" class="tablewrap" hidden><p class="small muted">Primeras tres filas del origen:</p><table><thead id="preview-head"></thead><tbody id="preview-body"></tbody></table></div>
 <button id="sample" type="button" class="ghost">Cargar ejemplo</button>
-<p class="notice">Esta es una prueba de concepto. Solo admite CSV UTF-8 con separador coma, punto y coma o tabulación y precios sin separadores de miles (máximo 2 decimales). No importa XLSX ni guarda perfiles.</p>
+<p class="small muted">Admite CSV de texto UTF-8 o Windows-1252 (habitual en Excel) y separadores coma, punto y coma o tabulación. Los precios usan hasta 2 decimales, sin separador de miles. No admite XLSX.</p>
 </section>
 <section class="panel">
 <h2>2. Correspondencia de columnas</h2>
@@ -67,6 +69,6 @@ th,td{text-align:left;border-bottom:1px solid var(--line);padding:10px;white-spa
 </section>
 <footer>DataFlow Lite · Prototipo de investigación comercial. Esta demo no almacena datos ni llama a servicios de red. El enlace de contacto abre tu cliente de correo.</footer>
 </main>
-<script src="logic.js?v=20261008-12"></script><script src="demo.js?v=20261008-12"></script>
+<script src="logic.js?v=20261009-13"></script><script src="demo.js?v=20261009-13"></script>
 </body>
 </html>

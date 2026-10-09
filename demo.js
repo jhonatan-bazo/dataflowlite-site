@@ -1,6 +1,7 @@
 "use strict";
 const $ = id => document.getElementById(id);
 let source = [], results = [], loadVersion = 0;
+let loadedSource = "";
 const MAX_BYTES = 5 * 1024 * 1024;
 
 function status(message, error = false) {
@@ -34,6 +35,7 @@ function setOptions(headers) {
   for (const id of ["sku", "name", "price"]) {
     const select = $(id);
     select.replaceChildren();
+    select.disabled = headers.length === 0;
     const empty = document.createElement("option");
     empty.value = "";
     empty.textContent = "— Selecciona columna —";
@@ -49,54 +51,108 @@ function setOptions(headers) {
   }
 }
 
-function load(content) {
+function resetSource(message = "Ningún CSV cargado.") {
   source = [];
+  loadedSource = "";
   clearResults();
   $("validate").disabled = true;
-  try {
-    if (new TextEncoder().encode(content).length > MAX_BYTES) {
-      throw new Error("El archivo supera el límite de 5 MB.");
+  setOptions([]);
+  $("source-info").textContent = message;
+  $("source-preview").hidden = true;
+}
+function renderPreview(headers, records) {
+  const head = $("preview-head"), body = $("preview-body");
+  head.replaceChildren();
+  body.replaceChildren();
+  const headerRow = document.createElement("tr");
+  for (const h of headers) {
+    const cell = document.createElement("th");
+    cell.textContent = h || "(sin nombre)";
+    headerRow.append(cell);
+  }
+  head.append(headerRow);
+  for (const record of records.slice(0, 3)) {
+    const tr = document.createElement("tr");
+    for (const cellValue of record.cells) {
+      const td = document.createElement("td");
+      td.textContent = cellValue.length > 120 ? cellValue.slice(0, 120) + "…" : cellValue;
+      tr.append(td);
     }
+    body.append(tr);
+  }
+  $("source-preview").hidden = false;
+}
+function load(content, label, decoding = "") {
+  resetSource("Leyendo " + label + "…");
+  try {
+    if (new TextEncoder().encode(content).length > MAX_BYTES) throw Error("Supera el límite de 5 MB.");
     const records = CSVTools.parseRecords(content);
-    if (records.length < 2) throw new Error("El CSV necesita una cabecera y registros.");
-    if (records[0].cells.length < 3) throw new Error("Se necesitan al menos tres columnas.");
-    source = records.slice(1).filter(row => row.cells.some(value => value.trim() !== ""));
-    if (!source.length) throw new Error("No hay registros de datos.");
-    setOptions(records[0].cells);
+    if (records.length < 2) throw Error("El CSV necesita encabezados y registros.");
+    const headers = records[0].cells;
+    if (headers.length < 3) throw Error("Solo se detectaron " + headers.length + " columnas; el mínimo es 3. Revisa el separador.");
+    const rows = records.slice(1).filter(row => row.cells.some(value => value.trim() !== ""));
+    if (!rows.length) throw Error("No hay registros de datos.");
+    source = rows;
+    loadedSource = label;
+    setOptions(headers);
+    renderPreview(headers, rows);
     $("validate").disabled = false;
-    status("Cargadas " + source.length + " filas. Revisa el mapeo antes de validar.");
+    $("source-info").textContent = "Origen: " + label + " · " + rows.length + " filas · " +
+      headers.length + " columnas" + (decoding ? " · " + decoding : "") +
+      ". Encabezados: " + headers.map(h => h || "(sin nombre)").join(" | ");
+    status("Cargadas " + rows.length + " filas de " + label + ". Revisa el mapeo.");
   } catch (error) {
-    source = [];
-    status(error.message || "Error de lectura CSV.", true);
+    resetSource("No se cargó " + label + ": " + error.message + ". Las columnas anteriores fueron eliminadas.");
+    status("Error al leer " + label + ": " + error.message, true);
   }
 }
-
 $("sample").addEventListener("click", () => {
   loadVersion++;
   $("file").value = "";
-  load("Codigo;Producto;Costo\nSKU-102;Teclado USB;42.50\nSKU-205;Mouse óptico;19,90\n;Adaptador;24.00\nSKU-205;Mouse extra;21.00");
+  load("Codigo;Producto;Costo\nSKU-102;Teclado USB;42.50\nSKU-205;Mouse óptico;19,90\n;Adaptador;24.00\nSKU-205;Mouse extra;21.00", "Ejemplo incluido");
 });
-
 $("file").addEventListener("change", async event => {
   const file = event.target.files && event.target.files[0];
-  const current = ++loadVersion;
-  source = [];
-  clearResults();
-  $("validate").disabled = true;
+  const version = ++loadVersion;
+  resetSource(file ? "Leyendo " + file.name + "…" : "Ningún CSV seleccionado.");
   if (!file) return;
+  if (!/\.(csv|txt|tsv)$/i.test(file.name)) {
+    resetSource("No se cargó " + file.name + ". Exporta como CSV desde Excel; XLSX no es compatible.");
+    status("Archivo no compatible. Guarda como CSV, no XLSX.", true);
+    return;
+  }
   if (file.size > MAX_BYTES) {
-    status("El archivo supera el límite de 5 MB.", true);
+    resetSource("No se cargó " + file.name + ": supera 5 MB.");
+    status("El archivo supera 5 MB.", true);
     return;
   }
   try {
-    const buffer = await file.arrayBuffer();
-    if (current !== loadVersion) return;
-    const content = new TextDecoder("utf-8", { fatal: true }).decode(buffer);
-    load(content);
+    const bytes = await file.arrayBuffer();
+    if (version !== loadVersion) return;
+    const b = new Uint8Array(bytes);
+    const utf16le = b[0] === 255 && b[1] === 254;
+    const utf16be = b[0] === 254 && b[1] === 255;
+    let encoding = utf16le ? "utf-16le" : utf16be ? "utf-16be" : "utf-8";
+    let content;
+    try {
+      content = new TextDecoder(encoding, {fatal: true}).decode(bytes);
+    } catch (_) {
+      if (encoding !== "utf-8") throw Error("Codificación UTF-16 inválida.");
+      encoding = "windows-1252";
+      content = new TextDecoder(encoding, {fatal: true}).decode(bytes);
+    }
+    if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(content)) throw Error("Archivo binario: exporta CSV de texto.");
+    load(content, file.name, encoding);
+    if (encoding === "windows-1252" && !$("validate").disabled) {
+      status("Archivo cargado como Windows-1252. Revisa las tildes antes de exportar.");
+    }
   } catch (error) {
-    if (current === loadVersion) status("No se pudo leer el archivo como CSV UTF-8: " + error.message, true);
+    if (version !== loadVersion) return;
+    resetSource("No se cargó " + file.name + ": " + error.message);
+    status("Error al leer " + file.name + ": " + error.message, true);
   }
 });
+resetSource();
 
 for (const id of ["sku", "name", "price", "allow-variants"]) {
   $(id).addEventListener("change", () => {
@@ -109,6 +165,10 @@ updateModeStatus();
 
 $("validate").addEventListener("click", () => {
   clearResults();
+  if (!loadedSource || !source.length) {
+    status("Primero carga un CSV real o el ejemplo.", true);
+    return;
+  }
   const indices = ["sku", "name", "price"].map(id => $(id).value);
   if (indices.some(value => value === "") || new Set(indices).size !== 3) {
     status("Selecciona tres columnas diferentes.", true);

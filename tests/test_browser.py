@@ -105,6 +105,29 @@ class SiteTests(unittest.TestCase):
         self.validate()
         expect(self.page.locator("#summary")).to_contain_text("1 válido")
 
+    def test_real_file_replaces_example_headers(self):
+        self.load_example()
+        expect(self.page.locator("#sku")).to_contain_text("Codigo")
+        self.upload(b"Articulo;Detalle;Monto\nX1;Manzana;8.90\nX2;Pera;5.00")
+        expect(self.page.locator("#source-info")).to_contain_text("datos.csv")
+        expect(self.page.locator("#source-info")).to_contain_text("Articulo | Detalle | Monto")
+        self.assertNotIn("Codigo", self.page.locator("#sku").inner_text())
+        expect(self.page.locator("#preview-body")).to_contain_text("Manzana")
+        self.page.locator("#sku").select_option("0")
+        self.page.locator("#name").select_option("1")
+        self.page.locator("#price").select_option("2")
+        self.validate()
+        expect(self.page.locator("#summary")).to_contain_text("2 válidos")
+
+    def test_excel_cp1252_and_separator_hint(self):
+        self.upload("sep=;\nCódigo;Descripción;Precio\nX;Lápiz;10,90".encode("cp1252"))
+        expect(self.page.locator("#source-info")).to_contain_text("windows-1252")
+        self.page.locator("#sku").select_option("0")
+        self.page.locator("#name").select_option("1")
+        self.page.locator("#price").select_option("2")
+        self.validate()
+        expect(self.page.locator("#summary")).to_contain_text("1 válido")
+
     def test_same_variant_is_rejected(self):
         self.upload(b"sku;name;price\nA;Uno;19.90\na;uno;19,9\n")
         expect(self.page.locator("#validate")).to_be_enabled()
@@ -121,10 +144,13 @@ class SiteTests(unittest.TestCase):
         expect(self.page.locator("#validate")).to_be_disabled()
         expect(self.page.locator("#result")).to_be_hidden()
         expect(self.page.locator("#feedback")).to_contain_text("columnas")
+        expect(self.page.locator("#source-info")).to_contain_text("No se cargó")
+        self.assertNotIn("Codigo", self.page.locator("#sku").inner_text())
 
     def test_utf8_injection_and_mobile(self):
         self.upload(b"sku;name;price\nA;\xff;20\n")
-        expect(self.page.locator("#feedback")).to_contain_text("UTF-8")
+        expect(self.page.locator("#source-info")).to_contain_text("windows-1252")
+        expect(self.page.locator("#validate")).to_be_enabled()
         self.upload(b'sku;name;price\n"=1+1";"<img src=x onerror=alert(1)>";10\n')
         expect(self.page.locator("#validate")).to_be_enabled()
         self.validate()
